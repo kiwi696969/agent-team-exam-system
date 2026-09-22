@@ -1,0 +1,26 @@
+openapi: 3.0.0
+info:
+  title: 在线考试系统 API
+  version: 1.0.0
+paths:
+  /api/auth/login:
+    post:
+      summary: 用户登录
+      requestBody:
+        content:
+          application/json:
+            schema: {type: object, required: [username, password], properties: {username: {type: string}, password: {type: string}}}
+      responses: {'200': {description: 返回 JWT}}
+  /api/questions:
+    get: {summary: 题目列表, parameters: [{name: subjectId, in: query, schema: {type: integer}}]}
+    post: {summary: 创建题目}
+  /api/exams:
+    post: {summary: 创建考试（组卷）}
+  /api/exams/{id}/start:
+    post: {summary: 学生开始考试}
+  /api/attempts/{id}/submit:
+    post: {summary: 交卷}
+  /api/attempts/{id}/grade/essay:
+    patch: {summary: 教师评主观题}
+  /api/stats/overview:
+    get: {summary: 成绩统计}
