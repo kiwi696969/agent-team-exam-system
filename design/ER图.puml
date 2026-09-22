@@ -1,0 +1,33 @@
+@startuml
+entity user {
+  * id : bigint PK
+  * username : varchar(50)
+  * password : varchar(100)
+  * role : enum(admin,teacher,student)
+}
+entity question {
+  * id : bigint PK
+  * subject_id : bigint FK
+  * type : enum(single,multiple,judge,blank,essay)
+  * content : text
+  * answer : text
+  * difficulty : tinyint
+}
+entity exam {
+  * id : bigint PK
+  * title : varchar(100)
+  * subject_id : bigint FK
+  * duration : int
+  * total_score : int
+}
+entity attempt {
+  * id : bigint PK
+  * exam_id : bigint FK
+  * user_id : bigint FK
+  * status : enum(ongoing,submitted,graded)
+  * score : decimal
+}
+user ||--o{ attempt
+exam ||--o{ attempt
+exam ||--o{ question : "exam_question"
+@enduml
