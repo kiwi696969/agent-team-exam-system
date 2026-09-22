@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>在线考试系统</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:#f0f4f8; color:#222; }
+  .nav { background:#1e3a5f; color:#fff; padding:14px 24px; display:flex; justify-content:space-between; align-items:center; }
+  .nav h1 { font-size:18px; }
+  .container { max-width:960px; margin:24px auto; padding:0 16px; }
+  .card { background:#fff; border-radius:12px; padding:20px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .btn { background:#2563eb; color:#fff; border:none; border-radius:8px; padding:9px 18px; cursor:pointer; font-size:14px; }
+  .btn.ghost { background:#eef2f7; color:#333; }
+  .question { margin-bottom:14px; }
+  .question p { font-weight:600; margin-bottom:6px; }
+  .bar { height:10px; background:#e5e7eb; border-radius:6px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#22c55e; }
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .stat { background:#f8fafc; border-radius:10px; padding:16px; text-align:center; }
+  .stat b { font-size:26px; color:#1e3a5f; }
+</style>
+</head>
+<body>
+<div class="nav"><h1>📝 在线考试系统</h1><span id="user">未登录</span></div>
+<div class="container" id="app">
+  <div class="card">
+    <h2>在线考试（AgentTeam 多智能体协作产物）</h2>
+    <p style="margin:8px 0 16px;color:#666;">自动组卷 · 在线答题 · 客观题自动判分 · 成绩统计 — 全栈 Web 毕业设计示例</p>
+    <button class="btn" onclick="login()">学生登录</button>
+    <button class="btn ghost" onclick="startExam()" style="margin-left:8px;">开始考试</button>
+  </div>
+  <div class="card"><h3>📊 成绩统计</h3><div class="stat-grid" id="stats"><div class="stat"><b>-</b><p>总考试数</p></div><div class="stat"><b>-</b><p>平均分</p></div><div class="stat"><b>-</b><p>及格率</p></div></div></div>
+  <div class="card"><h3>📖 考试题目（答题演示）</h3><div id="qlist"></div><button class="btn" onclick="submitExam()">交卷（自动判分）</button></div>
+</div>
+<script>
+const API = 'http://127.0.0.1:3000';
+const qdiv = document.getElementById('qlist');
+let questions = [];
+
+async function load() {
+  const r = await fetch(API + '/api/questions').then(r=>r.json());
+  questions = r.data; qdiv.innerHTML = '';
+  questions.filter(q=>q.type!=='essay').slice(0,4).forEach((q,i)=>{
+    qdiv.innerHTML += `<div class="question"><p>${i+1}. ${q.content}（${q.type}）</p>${(q.options||[]).map((o,j)=>`<label style="margin-right:12px"><input type="radio" name="q${q.id}" value="${String.fromCharCode(65+j)}"> ${o}</label>`).join('')}</div>`;
+  });
+  const st = await fetch(API + '/api/stats/overview').then(r=>r.json());
+  document.getElementById('stats').innerHTML = `<div class="stat"><b>${st.data.total||0}</b><p>总考试数</p></div><div class="stat"><b>${st.data.avg||0}</b><p>平均分</p></div><div class="stat"><b>${st.data.passRate||0}%</b><p>及格率</p></div>`;
+}
+function login(){ document.getElementById('user').textContent = '学生已登录'; }
+async function startExam(){
+  const r = await fetch(API + '/api/exams/1/start',{method:'POST'}).then(r=>r.json());
+  alert('已创建答卷 #'+r.data.id+'，开始答题 60 分钟倒计时');
+}
+async function submitExam(){
+  const answers = {};
+  questions.filter(q=>q.type!=='essay').slice(0,4).forEach(q=>{
+    const el = document.querySelector(`input[name="q${q.id}"]:checked`);
+    answers[q.id] = el ? el.value : '';
+  });
+  const r = await fetch(API + '/api/attempts/1/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers})}).then(r=>r.json());
+  alert('交卷成功！成绩：'+r.data.score+' 分');
+  load();
+}
+load();
+</script>
+</body>
+</html>
