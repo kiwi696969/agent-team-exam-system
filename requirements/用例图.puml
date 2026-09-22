@@ -1,0 +1,24 @@
+@startuml
+left to right direction
+actor 管理员 as admin
+actor 教师 as teacher
+actor 学生 as student
+
+rectangle 在线考试系统 {
+  (用户登录) as u1
+  (题库管理) as u2
+  (组卷发布) as u3
+  (在线答题) as u4
+  (自动阅卷) as u5
+  (成绩统计) as u6
+  (账号管理) as u7
+}
+
+admin --> u7
+teacher --> u2
+teacher --> u3
+teacher --> u5
+teacher --> u6
+student --> u1
+student --> u4
+@enduml
