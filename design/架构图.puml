@@ -1,0 +1,13 @@
+@startuml
+!define RECTANGLE class
+skinparam componentStyle rectangle
+
+[Vue3 SPA] as FE
+[Express API] as API
+[MySQL] as DB
+[Redis (会话/缓存)] as REDIS
+
+FE --> API : REST/JSON + JWT
+API --> DB : Sequelize ORM
+API --> REDIS : 考试会话缓存
+@enduml
